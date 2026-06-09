@@ -18,6 +18,16 @@ fn main() {
                         .required(true)
                         .help("Graph distance from POOP"),
                 ),
+        )
+        .subcommand(
+            Command::new("play")
+                .about("Find the shortest path from WORD to POOP")
+                .arg(
+                    Arg::new("word")
+                        .value_name("WORD")
+                        .required(true)
+                        .help("Starting word"),
+                ),
         );
 
     let matches = app.get_matches();
@@ -48,5 +58,29 @@ fn main() {
             println!("{word}");
         }
         log::info!("{} word(s) at distance {distance}", results.len());
+    }
+
+    if let Some(("play", sub_matches)) = matches.subcommand() {
+        let word = sub_matches
+            .get_one::<String>("word")
+            .expect("Word is required")
+            .to_uppercase();
+
+        let t = Instant::now();
+        let word_set = WordSet::load();
+        log::debug!("graph build: {:.2?}", t.elapsed());
+
+        let chain = word_set.play(&word);
+        log::debug!("total:       {:.2?}", t.elapsed());
+
+        if chain.is_empty() {
+            eprintln!("No path found from {word} to POOP");
+            std::process::exit(1);
+        }
+
+        for (i, word) in chain.iter().enumerate() {
+            println!("{i} {word}");
+        }
+        log::info!("length {}", chain.len() - 1);
     }
 }
