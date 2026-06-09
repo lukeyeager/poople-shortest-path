@@ -24,6 +24,11 @@ impl WordSet {
     pub fn list_words_at_distance(&self, source: &str, distance: usize) -> Vec<String> {
         bfs(&self.adjacency, source, distance)
     }
+
+    pub fn play(&self, _source: &str) -> Vec<String> {
+        // TODO: find shortest path from source to POOP
+        vec!["POOP".to_string()]
+    }
 }
 
 // Builds adjacency list by generating all single-character substitutions per word
