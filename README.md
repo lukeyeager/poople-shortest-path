@@ -10,16 +10,11 @@ And, finally, I once read this XKCD blog article where he mentioned that linux s
 
 So, naturally, I had to write this.
 
-## Approach
-
-I don't think A* will work here because there's not an objective way to measure the distance between nodes.
-You could try to set a minimum distance between nodes by calculating how many characters are different, but I think we'll accomplish the same thing by doing a bidirectional Dijkstra.
-
 ## Usage
 
 ```bash
 # utility to list all valid words at the given distance
-# implemented with a breadth-first search
+# implemented with a simple BFS
 $ poople list 0
 POOP
 $ poople list 1
@@ -27,7 +22,7 @@ COOP
 POOL
 ...
 
-# utility to play the poople game, implemented with a bidirectional dijkstra
+# utility to play the poople game, implemented with a bidirectional BFS
 $ poople play POOP
 0 POOP
 $ poople play POOL
