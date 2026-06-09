@@ -6,7 +6,9 @@ fn main() {
 
     let count = contents
         .lines()
-        .filter(|word| word.chars().count() == 4)
+        .filter(|word| {
+            word.len() == 4 && word.chars().all(|c| c.is_ascii_alphabetic())
+        })
         .count();
 
     println!("{} words", count);
