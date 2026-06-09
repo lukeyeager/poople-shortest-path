@@ -11,11 +11,21 @@ impl WordSet {
         let contents = fs::read_to_string("/usr/share/dict/american-english")
             .expect("Failed to read dictionary file");
 
-        let words: HashSet<String> = contents
+        let mut words: HashSet<String> = contents
             .lines()
             .filter(|word| word.len() == 4 && word.chars().all(|c| c.is_ascii_alphabetic()))
             .map(|word| word.to_uppercase())
             .collect();
+
+        // Load exclusion list if it exists
+        if let Ok(exclusions) = fs::read_to_string("wordlist-exclude.txt") {
+            let excluded: HashSet<String> = exclusions
+                .lines()
+                .map(|line| line.trim().to_uppercase())
+                .filter(|word| !word.is_empty())
+                .collect();
+            words.retain(|w| !excluded.contains(w));
+        }
 
         let adjacency = build_adjacency(&words);
         WordSet { words, adjacency }
