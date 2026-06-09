@@ -1,8 +1,9 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fs;
 
 pub struct WordSet {
     pub words: HashSet<String>,
+    adjacency: HashMap<String, Vec<String>>,
 }
 
 impl WordSet {
@@ -10,30 +11,75 @@ impl WordSet {
         let contents = fs::read_to_string("/usr/share/dict/american-english")
             .expect("Failed to read dictionary file");
 
-        let words = contents
+        let words: HashSet<String> = contents
             .lines()
-            .filter(|word| {
-                word.len() == 4 && word.chars().all(|c| c.is_ascii_alphabetic())
-            })
+            .filter(|word| word.len() == 4 && word.chars().all(|c| c.is_ascii_alphabetic()))
             .map(|word| word.to_uppercase())
-            .collect::<HashSet<_>>();
+            .collect();
 
-        WordSet { words }
+        let adjacency = build_adjacency(&words);
+        WordSet { words, adjacency }
     }
 
-    pub fn list_words_at_distance(&self, word: &str, distance: usize) -> Vec<String> {
-        self.words
-            .iter()
-            .filter(|w| character_distance(word, w) == distance)
-            .cloned()
-            .collect()
+    pub fn list_words_at_distance(&self, source: &str, distance: usize) -> Vec<String> {
+        bfs(&self.adjacency, source, distance)
     }
 }
 
-pub fn character_distance(word1: &str, word2: &str) -> usize {
-    word1
-        .chars()
-        .zip(word2.chars())
-        .filter(|(c1, c2)| c1 != c2)
-        .count()
+// Builds adjacency list by generating all single-character substitutions per word
+// and checking membership — O(V * 104) vs O(V²) for naive pairwise comparison.
+fn build_adjacency(words: &HashSet<String>) -> HashMap<String, Vec<String>> {
+    let mut adj: HashMap<String, Vec<String>> = words
+        .iter()
+        .map(|w| (w.clone(), Vec::new()))
+        .collect();
+
+    for word in words {
+        let mut bytes = [0u8; 4];
+        bytes.copy_from_slice(word.as_bytes());
+
+        for pos in 0..4 {
+            let original = bytes[pos];
+            for c in b'A'..=b'Z' {
+                if c == original {
+                    continue;
+                }
+                bytes[pos] = c;
+                let neighbor = std::str::from_utf8(&bytes).unwrap();
+                if words.contains(neighbor) {
+                    adj.get_mut(word).unwrap().push(neighbor.to_string());
+                }
+            }
+            bytes[pos] = original;
+        }
+    }
+
+    adj
+}
+
+// BFS from `source` up to `target_depth`. Stops expanding once nodes at
+// `target_depth` are reached, so work is proportional to the subgraph visited —
+// O(V' + E') where V', E' are nodes/edges within `target_depth` of `source`.
+fn bfs(adj: &HashMap<String, Vec<String>>, source: &str, target_depth: usize) -> Vec<String> {
+    let mut visited: HashSet<String> = HashSet::new();
+    let mut queue: VecDeque<(String, usize)> = VecDeque::new();
+    let mut result: Vec<String> = Vec::new();
+
+    visited.insert(source.to_string());
+    queue.push_back((source.to_string(), 0));
+
+    while let Some((word, d)) = queue.pop_front() {
+        if d == target_depth {
+            result.push(word);
+        } else {
+            for neighbor in adj.get(&word).into_iter().flatten() {
+                if !visited.contains(neighbor) {
+                    visited.insert(neighbor.clone());
+                    queue.push_back((neighbor.clone(), d + 1));
+                }
+            }
+        }
+    }
+
+    result
 }

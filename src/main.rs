@@ -1,3 +1,4 @@
+use std::time::Instant;
 use clap::{Command, Arg};
 use poople_shortest_path::WordSet;
 
@@ -6,12 +7,12 @@ fn main() {
         .about("Word path solver")
         .subcommand(
             Command::new("list-words-at-distance")
-                .about("List all words at a given distance from POOP")
+                .about("List all words reachable from POOP in exactly N steps on the word graph")
                 .arg(
                     Arg::new("distance")
                         .value_name("DISTANCE")
                         .required(true)
-                        .help("Distance from POOP"),
+                        .help("Graph distance from POOP"),
                 ),
         );
 
@@ -24,12 +25,24 @@ fn main() {
             .parse()
             .expect("Distance must be a number");
 
+        let t = Instant::now();
         let word_set = WordSet::load();
-        let mut results = word_set.list_words_at_distance("POOP", distance);
-        results.sort();
+        eprintln!("[timing] graph build: {:.2?}", t.elapsed());
 
-        for word in results {
-            println!("{}", word);
+        let t2 = Instant::now();
+        let mut results = word_set.list_words_at_distance("POOP", distance);
+        eprintln!("[timing] bfs:         {:.2?}", t2.elapsed());
+        eprintln!("[timing] total:       {:.2?}", t.elapsed());
+
+        if results.is_empty() {
+            eprintln!("No words found at distance {distance}");
+            std::process::exit(1);
         }
+
+        results.sort();
+        for word in &results {
+            println!("{word}");
+        }
+        eprintln!("[info]  {} word(s) at distance {distance}", results.len());
     }
 }
