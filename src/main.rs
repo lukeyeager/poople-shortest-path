@@ -1,15 +1,6 @@
-use std::fs;
+use poople_shortest_path::WordSet;
 
 fn main() {
-    let contents = fs::read_to_string("/usr/share/dict/american-english")
-        .expect("Failed to read dictionary file");
-
-    let count = contents
-        .lines()
-        .filter(|word| {
-            word.len() == 4 && word.chars().all(|c| c.is_ascii_alphabetic())
-        })
-        .count();
-
-    println!("{} words", count);
+    let word_set = WordSet::load();
+    println!("{} words", word_set.words.len());
 }
