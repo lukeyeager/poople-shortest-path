@@ -7,6 +7,8 @@ fn main() {
 
     let app = Command::new("poople")
         .about("Word path solver")
+        .subcommand_required(true)
+        .arg_required_else_help(true)
         .subcommand(
             Command::new("list-words-at-distance")
                 .about("List all words reachable from POOP in exactly N steps on the word graph")
