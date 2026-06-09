@@ -3,6 +3,8 @@ use clap::{Command, Arg};
 use poople_shortest_path::WordSet;
 
 fn main() {
+    env_logger::init();
+
     let app = Command::new("poople")
         .about("Word path solver")
         .subcommand(
@@ -27,12 +29,12 @@ fn main() {
 
         let t = Instant::now();
         let word_set = WordSet::load();
-        eprintln!("[timing] graph build: {:.2?}", t.elapsed());
+        log::debug!("graph build: {:.2?}", t.elapsed());
 
         let t2 = Instant::now();
         let mut results = word_set.list_words_at_distance("POOP", distance);
-        eprintln!("[timing] bfs:         {:.2?}", t2.elapsed());
-        eprintln!("[timing] total:       {:.2?}", t.elapsed());
+        log::debug!("bfs:         {:.2?}", t2.elapsed());
+        log::debug!("total:       {:.2?}", t.elapsed());
 
         if results.is_empty() {
             eprintln!("No words found at distance {distance}");
@@ -43,6 +45,6 @@ fn main() {
         for word in &results {
             println!("{word}");
         }
-        eprintln!("[info]  {} word(s) at distance {distance}", results.len());
+        log::info!("{} word(s) at distance {distance}", results.len());
     }
 }
