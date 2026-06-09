@@ -30,8 +30,8 @@ fn play_pool_to_poop() {
 }
 
 #[test]
-fn play_edgy_length_15() {
+fn play_edge_length_15() {
     let ws = WordSet::load();
-    let chain = ws.play("EDGY");
+    let chain = ws.play("EDGE");
     assert_eq!(chain.len() - 1, 15);
 }

@@ -25,9 +25,11 @@ impl WordSet {
         bfs(&self.adjacency, source, distance)
     }
 
-    pub fn play(&self, _source: &str) -> Vec<String> {
-        // TODO: find shortest path from source to POOP
-        vec!["POOP".to_string()]
+    pub fn play(&self, source: &str) -> Vec<String> {
+        let t = std::time::Instant::now();
+        let path = bfs_path(&self.adjacency, source, "POOP");
+        log::debug!("bfs_path:    {:.2?}", t.elapsed());
+        path
     }
 }
 
@@ -60,6 +62,45 @@ fn build_adjacency(words: &HashSet<String>) -> HashMap<String, Vec<String>> {
     }
 
     adj
+}
+
+// BFS from `source` to `target`, returning the shortest path as a Vec or empty if unreachable.
+fn bfs_path(adj: &HashMap<String, Vec<String>>, source: &str, target: &str) -> Vec<String> {
+    if source == target {
+        return vec![source.to_string()];
+    }
+
+    let mut parent: HashMap<String, String> = HashMap::new();
+    let mut queue: VecDeque<String> = VecDeque::new();
+
+    parent.insert(source.to_string(), source.to_string());
+    queue.push_back(source.to_string());
+
+    while let Some(word) = queue.pop_front() {
+        for neighbor in adj.get(&word).into_iter().flatten() {
+            if parent.contains_key(neighbor) {
+                continue;
+            }
+            parent.insert(neighbor.clone(), word.clone());
+            if neighbor == target {
+                let mut path = vec![target.to_string()];
+                let mut cur = target;
+                loop {
+                    let p = &parent[cur];
+                    if p == cur {
+                        break;
+                    }
+                    path.push(p.clone());
+                    cur = p;
+                }
+                path.reverse();
+                return path;
+            }
+            queue.push_back(neighbor.clone());
+        }
+    }
+
+    vec![]
 }
 
 // BFS from `source` up to `target_depth`. Stops expanding once nodes at
