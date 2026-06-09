@@ -10,7 +10,7 @@ fn main() {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .subcommand(
-            Command::new("list-words-at-distance")
+            Command::new("list")
                 .about("List all words reachable from POOP in exactly N steps on the word graph")
                 .arg(
                     Arg::new("distance")
@@ -22,7 +22,7 @@ fn main() {
 
     let matches = app.get_matches();
 
-    if let Some(("list-words-at-distance", sub_matches)) = matches.subcommand() {
+    if let Some(("list", sub_matches)) = matches.subcommand() {
         let distance: usize = sub_matches
             .get_one::<String>("distance")
             .expect("Distance is required")

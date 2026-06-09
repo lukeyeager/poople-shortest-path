@@ -20,9 +20,9 @@ You could try to set a minimum distance between nodes by calculating how many ch
 ```bash
 # utility to list all valid words at the given distance
 # implemented with a breadth-first search
-$ poople list-words-at-distance 0
+$ poople list 0
 POOP
-$ poople list-words-at-distance 1
+$ poople list 1
 COOP
 POOL
 ...
